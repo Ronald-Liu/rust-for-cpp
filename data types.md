@@ -1,4 +1,4 @@
-# Data types
+# 数据类型
 
 In this post I'll discuss Rust's data types. These are roughly equivalent to
 classes, structs, and enums in C++. One difference with Rust is that data and
@@ -8,28 +8,36 @@ traits and `impl`s (implementations), but traits cannot contain data, they are
 similar to Java's interfaces in that respect. I'll cover traits and impls in a
 later post, this one is all about data.
 
-## Structs
+下面我们要讨论Rust中的数据类型。它们大致对应于C++中的class, struct和enum类型。与C++（Java以及大多数面向对象的语言）相比，Rust的数据和行为分离的更为严格。在Rust中，行为可以在traits或impl中由函数定义，其中traits不能包含数据。他们的意义接近于Java中的interface。我将在后面的章节讨论impl和traits，本章则只讨论数据。
+
+## 结构体
 
 A rust struct is similar to a C struct or a C++ struct without methods. Simply a
 list of named fields. The syntax is best seen with an example:
 
+Rust中的结构体(struct)与C中的struct或C++中不带方法的struct相似，只需要列出域的名字。他的语法是：
+
 ```rust
 struct S {
-    field1: int,
-    field2: SomeOtherStruct
+    field1: int,  
+    field2: SomeOtherStruct  
 }
 ```
 
 Here we define a struct called `S` with two fields. The fields are comma
 separated; if you like, you can comma-terminate the last field too.
 
+这里我们定义了一个名叫S的struct，并定义了两个域。域之间用逗号分割。如果你喜欢，你也可以在最后一个域后面加逗号。
+
 Structs introduce a type. In the example, we could use `S` as a type.
 `SomeOtherStruct` is assumed to be another struct (used as a type in the
 example), and (like C++) it is included by value, that is, there is no pointer
 to another struct object in memory.
+结构体定义一个类型。在这个例子中，我们使用S作为类型。并假设SomeOtherStruct是另一个类型并且以值的形式包含在struct中。所谓值的形式，意思是不使用指向其他结构的指针。
 
 Fields in structs are accessed using the `.` operator and their name. An example
 of struct use:
+要访问结构体中的域，需要使用`.`运算符和域的名字。下面的例子说明了对struct的使用方法
 
 ```rust
 fn foo(s1: S, s2: &S) {
@@ -43,9 +51,11 @@ fn foo(s1: S, s2: &S) {
 Here `s1` is struct object passed by value and `s2` is a struct object passed by
 reference. As with method call, we use the same `.` to access fields in both, no
 need for `->`.
+这里 `s1`是一个按值传递的struct对象，而`s2`是一个引用传递的struct对象。在函数中，我们都使用`.`来访问域，而不需要使用`->`
 
 Structs are initialised using struct literals. These are the name of the struct
 and values for each field. For example,
+结构体由结构自面量(struct literals)初始化。需要指定结构体的名字以及每个域的值。下面是一个结构体初始化的例子
 
 ```rust
 fn foo(sos: SomeOtherStruct) {
@@ -59,6 +69,7 @@ involving definitions and field types. This is because of the value semantics of
 structs. So for example, `struct R { r: Option<R> }` is illegal and will cause a
 compiler error (see below for more about Option). If you need such a structure
 then you should use some kind of pointer; cycles with pointers are allowed:
+由于结构体定义使用值语义，结构体不能递归定义，这意味着struct内域的类型不能包含自己。像`struct R { r: Option<R> }`这样的定义是非法的，并且会触发编译错误（后面将会详细说到Option）。如果你需要递归引用的结构体，你应该使用某种形式的指针，因为指针中允许存在环。下面的例子就是一个合法的自我引用结构体
 
 ```rust
 struct R {
@@ -68,10 +79,12 @@ struct R {
 
 If we didn't have the `Option` in the above struct, there would be no way to
 instantiate the struct and Rust would signal an error.
+如果上例中没有Option，我们就无法初始化这个结构体，Rust会因此报错。
 
 Structs with no fields do not use braces in either their definition or literal
 use. Definitions do need a terminating semi-colon though, presumably just to
 facilitate parsing.
+没有域的结构体无论在定义还是字面量中都不使用大括号。大概是为了加速语法分析，在定义中还是需要有一个分号结尾。下例定义了一个空结构体
 
 ```rust
 struct Empty;
@@ -89,6 +102,7 @@ identified by structure. For example, the type `(int, int)` is a pair of
 integers and `(i32, f32, S)` is a triple. Enum values are initialised in the
 same way as enum types are declared, but with values instead of types for the
 components, e.g., `(4, 5)`. An example:
+元组(Tuple)是匿名、异构的数据序列。元组由括号中的类型名来定义。因为元组没有名字，他们是由它们的结构定义的。比如类型`(int,int)`是整数而`(i32, f32, S)`是一个三元组。enum值可以用其声明的enum类型来初始化，而不能用类型以外的值(如`(4,5)`)作为元素。下面是一个例子
 
 ```rust
 // foo takes a struct and returns a tuple
@@ -98,6 +112,7 @@ fn foo(x: SomeOtherStruct) -> (i32, f32, S) {
 ```
 
 Tuples can be used by destructuring using a `let` expression, e.g.,
+元组可以用在let表达式之后用于解构。
 
 ```rust
 fn bar(x: (int, int)) {
@@ -107,15 +122,21 @@ fn bar(x: (int, int)) {
 ```
 
 We'll talk more about destructuring next time.
+我们讲在后面详细说解构的问题。
 
-
-## Tuple structs
+## 元组结构体
 
 Tuple structs are named tuples, or alternatively, structs with unnamed fields.
+元组结构体是有名字的元组，或者说是没有域名字的结构体。
 They are declared using the `struct` keyword, a list of types in parentheses,
-and a semicolon. Such a declaration introduces their name as a type. Their
+元组结构体使用`struct`关键字声明，接着一些逗号分割的类型并用括号包裹，最后跟着一个分号。
+and a semicolon. Such a declaration introduces their name as a type.
+这样就声明了一个具有指定名字的类型。
+ Their
 fields must be accessed by destructuring (like a tuple), rather than by name.
+其中的域只能像元组一样通过解构操作访问，而不能通过域的名字访问。
 Tuple structs are not very common.
+元组结构体不是很常用。下面是一个元组结构体的例子。
 
 ```rust
 struct IntPoint (int, int);
@@ -130,7 +151,9 @@ fn foo(x: IntPoint) {
 ## Enums
 
 Enums are types like C++ enums or unions, in that they are types which can take
-multiple values. The simplest kind of enum is just like a C++ enum:
+multiple values. 
+枚举(Enum)是类似于C++中enum和union的类型，其中可以放置多种类型的值。The simplest kind of enum is just like a C++ enum:
+最简单的一种枚举类型就像C++中的enum：
 
 ```rust
 enum E1 {
@@ -153,6 +176,7 @@ data. Like tuples, these are defined by a list of types. In this case they are
 more like unions than enums in C++. Rust enums are tagged unions rather untagged
 (as in C++), that means you can't mistake one variant of an enum for another at
 runtime. An example:
+然而，Rust中的枚举比C++中的要强大的多：枚举的每个变体都可以包含数据。他们可以像元组一样通过类型列表来定义。在这种情况下enum更像是C++中的union。Rush的enum可使用带标记的union而不像C++中一样不带标记。着意味着你永远不会在运行时把一个变体当作另一个使用。举例来说：
 
 ```rust
 enum Expr {
@@ -168,10 +192,12 @@ fn foo() {
 
 Many simple cases of object-oriented polymorphism are better handled in Rust
 using enums.
+在Rust中使用enum可以实现大多数简单的面向对象多态性。
 
 To use enums we usually use a match expression. Remember that these are similar
 to C++ switch statements. I'll go into more depth on these and other ways to
 destructure data next time. Here's an example:
+我们通常将match表达式于enum一起使用。之前说过match表达式与C++中的switch语句相似。之后我们将深入的讨论match表达式及其与数据解构结合的高级用法。这是一个例子
 
 ```rust
 fn bar(e: Expr) {
@@ -188,7 +214,7 @@ be covered. The last case (`_`) covers all remaining variants, although in the
 example there is only `Lit`. Any data in a variant can be bound to a variable.
 In the `Add` arm we are binding the two ints in an `Add` to `x` and `y`. If we
 don't care about the data, we can use `..` to match any data, as we do for `Or`.
-
+match的每一个分支匹配了`Expr`的一个变体，而且必须涵盖所有变体。最后一个`_`分支可以涵盖所有没有列出的变体（这个例子中只有`Lit`）。每个变体中的数据都被绑定在一个变量中，如在`Add`分支中我们绑定了`Add`的两个int到`x`和`y`中。如果我们不关心数据，可以像例子中的`Or`分支一样，使用`..`来匹配任意数据。
 
 ## Option
 
@@ -202,6 +228,7 @@ an Option in Rust. Using Option is safer because you must always check it before
 use; there is no way to do the equivalent of dereferencing a null pointer. They
 are also more general, you can use them with values as well as pointers. An
 example:
+Rust中一个尤其常用的enum类型是`Option`。它有两个变体:`Some`和`None`。`None`不包含数据，而`Some`有一个类型为`T`的数据。`Option`是一个范型enum，我们将在后面详细说明，他的基本思想来源于C++。Option常常表示一个值可以存在也可以不存在。在C++中使用nullptr的地方（可能用于表示不可用、未定义、未初始化或者false），在Rust中都应使用Option。使用Option将会保证在使用值之前对它进行检查，从而避免出现对null指针解引用之类的操作，因而更加安全。同时它更具一般性，既可以与指针一起使用，也可以与值一起使用。下面是一个例子：
 
 ```rust
 use std::rc::Rc;
@@ -222,10 +249,11 @@ fn is_root(node: Node) -> bool {
 Here, the parent field could be either a `None` or a `Some` containing an
 `Rc<Node>`. In the example, we never actually use that payload, but in real life
 you usually would.
-
+这里，`parent`域既可以使`None`也可以是包含一个`Rc<Node>`类型的`Some`。这个例子中通过使用`_`忽略了`Some`的载荷，因为我们并不需要它，在实际工作中有可能需要对其进行绑定。
 
 There are also convenience methods on Option, so you could write the body of
 `is_root` as `node.is_none()` or `!node.is_some()`.
+Option包含了很多方法方便使用，因此你可以将刚才`is_root`函数的函数体写为`node.is_none()`或者`!node.is_some()`。
 
 ## Inherited mutabilty and Cell/RefCell
 
